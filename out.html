@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html class="pf-v5-theme-dark">
+<head>
+    <meta charset="utf-8">
+    <title>Outbound Traffic Dashboard</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <!-- Cockpit base JavaScript API (provides cockpit.spawn, etc.) -->
+    <script src="../base1/cockpit.js"></script>
+
+    <!-- Dashboard-specific stylesheet and logic (kept in separate files) -->
+    <link rel="stylesheet" href="out.css">
+</head>
+<body class="pf-v5-m-tabular-nums">
+    <div class="ct-page-fill">
+
+        <!-- ============================================================= -->
+        <!-- HEADER: Title (left), subtitle (right of title), controls     -->
+        <!-- ============================================================= -->
+        <div class="traffic-header">
+            <div class="traffic-header-title">
+                <h1 class="traffic-title">URL traffic</h1>
+                <span class="traffic-subtitle">logged DNS queries</span>
+            </div>
+            <div class="traffic-controls">
+                <!-- Time range filter buttons -->
+                <div class="time-filter-group">
+                    <button class="time-filter-btn active" data-range="24 hours ago">24 Hours</button>
+                    <button class="time-filter-btn" data-range="1 week ago">Last Week</button>
+                    <button class="time-filter-btn" data-range="1 month ago">Last Month</button>
+                    <button class="time-filter-btn" data-range="1 year ago">Last Year</button>
+                </div>
+                <!-- Auto-refresh countdown display -->
+                <div class="refresh-indicator">
+                    <span>Next refresh: <span id="refresh-countdown">15</span>s</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- ============================================================= -->
+        <!-- SHADOWED HORIZONTAL LINE between header and table             -->
+        <!-- ============================================================= -->
+        <hr class="traffic-separator">
+
+        <!-- ============================================================= -->
+        <!-- LOADING SPINNER (shown while fetching data)                   -->
+        <!-- ============================================================= -->
+        <div id="loading-spinner" class="loading-spinner hidden">
+            <div class="spinner"></div>
+            <span>Loading traffic data...</span>
+        </div>
+
+        <!-- ============================================================= -->
+        <!-- ERROR MESSAGE (shown if data fetch fails)                     -->
+        <!-- ============================================================= -->
+        <div id="error-container" class="error-container hidden"></div>
+
+        <!-- ============================================================= -->
+        <!-- MAIN TABLE: 7 columns, sortable, scrollable                   -->
+        <!-- ============================================================= -->
+        <div class="traffic-table-container">
+            <table class="traffic-table">
+                <thead>
+                    <tr>
+                        <th data-column="url">
+                            URL
+                            <span class="sort-controls">
+                                <button class="sort-btn" data-column="url" data-direction="asc" title="Sort ascending">&#9650;</button>
+                                <button class="sort-btn" data-column="url" data-direction="desc" title="Sort descending">&#9660;</button>
+                            </span>
+                        </th>
+                        <th data-column="address">
+                            Address
+                            <span class="sort-controls">
+                                <button class="sort-btn" data-column="address" data-direction="asc" title="Sort ascending">&#9650;</button>
+                                <button class="sort-btn" data-column="address" data-direction="desc" title="Sort descending">&#9660;</button>
+                            </span>
+                        </th>
+                        <th data-column="firstTimestamp">
+                            First Timestamp
+                            <span class="sort-controls">
+                                <button class="sort-btn" data-column="firstTimestamp" data-direction="asc" title="Sort ascending">&#9650;</button>
+                                <button class="sort-btn" data-column="firstTimestamp" data-direction="desc" title="Sort descending">&#9660;</button>
+                            </span>
+                        </th>
+                        <th data-column="lastTimestamp">
+                            Last Timestamp
+                            <span class="sort-controls">
+                                <button class="sort-btn" data-column="lastTimestamp" data-direction="asc" title="Sort ascending">&#9650;</button>
+                                <button class="sort-btn" data-column="lastTimestamp" data-direction="desc" title="Sort descending">&#9660;</button>
+                            </span>
+                        </th>
+                        <th data-column="frequency">
+                            Frequency
+                            <span class="sort-controls">
+                                <button class="sort-btn" data-column="frequency" data-direction="asc" title="Sort ascending">&#9650;</button>
+                                <button class="sort-btn" data-column="frequency" data-direction="desc" title="Sort descending">&#9660;</button>
+                            </span>
+                        </th>
+                        <th data-column="category">
+                            Category
+                            <span class="sort-controls">
+                                <button class="sort-btn" data-column="category" data-direction="asc" title="Sort ascending">&#9650;</button>
+                                <button class="sort-btn" data-column="category" data-direction="desc" title="Sort descending">&#9660;</button>
+                            </span>
+                        </th>
+                        <th data-column="data">
+                            Data
+                            <span class="sort-controls">
+                                <button class="sort-btn" data-column="data" data-direction="asc" title="Sort ascending">&#9650;</button>
+                                <button class="sort-btn" data-column="data" data-direction="desc" title="Sort descending">&#9660;</button>
+                            </span>
+                        </th>
+                    </tr>
+                </thead>
+                <tbody id="traffic-table-body">
+                    <tr class="empty-state">
+                        <td colspan="7">No traffic data available</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- ============================================================= -->
+        <!-- STATUS BAR: record count and last update time                 -->
+        <!-- ============================================================= -->
+        <div class="traffic-status-bar">
+            <span id="record-count">0 records</span>
+            <span id="last-update">Never updated</span>
+        </div>
+
+    </div>
+
+    <!-- Application logic loaded at end of body so DOM is ready -->
+    <script src="out.js"></script>
+</body>
+</html>

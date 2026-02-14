@@ -1,0 +1,19 @@
+{
+
+      "version": 0,
+
+      "name": "traffic-monitor",
+
+      "tools": {
+
+          "out": {
+
+              "label": "Outbound Traffic",
+
+              "path": "out.html"
+
+          }
+
+      }
+
+  }

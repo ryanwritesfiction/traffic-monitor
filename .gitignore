@@ -1,0 +1,5 @@
+# Project documentation containing server-specific details (IPs, usernames, etc.)
+Claude.md
+
+# Claude Code internal state
+.claude/
