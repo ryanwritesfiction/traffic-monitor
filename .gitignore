@@ -1,5 +1,10 @@
 # Project documentation containing server-specific details (IPs, usernames, etc.)
 Claude.md
+IMPLEMENTATION_PLAN.md
+DEBUG_SESSION.md
+
+# Screenshots from debugging and development
+images/
 
 # Claude Code internal state
 .claude/
