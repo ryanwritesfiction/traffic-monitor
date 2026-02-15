@@ -40,7 +40,7 @@ Reload and restart the service:
 ``` sudo systemctl daemon-reload```
 
 ``` sudo systemctl restart systemd-resolved```
-
+<br></br>
 
 ### Supplement with Iptables for IP/Port Logging: 
 
@@ -61,7 +61,7 @@ Add logging rules:
 To view these changes in Cockpit's Logs (search for "OUT_HTTP" or "OUT_HTTPS") 
 
 This setup is minimal, uses only official Ubuntu tools/packages, and avoids complex setups like proxies or third-party software. If your server has heavy traffic, monitor log size (journalctl rotates automatically). For automation/alerts on unauthorized     domains, you could script journalctl output, but that's beyond "simple."
-
+<br></br>
 
 ### To Log Ping Traffic:
 
@@ -74,7 +74,7 @@ To log outbound ICMP (ping) traffic with a clear prefix in Cockpit, you can add 
 
 By adding this, you'll have a more complete picture of your server's outbound "pulse" alongside your existing web traffic logs.
 
-
+<br></br>
 ### Cockpit Install Instructions:
 
 Cockpit is a lightweight, web-based admin interface available in Ubuntu's repositories. It provides a dashboard for logs, system overview, and more.
@@ -95,7 +95,7 @@ Access the dashboard:
         
   ◦ Log in with your Ubuntu server's username and password (must have sudo privileges for full access).
 
-
+<br></br>
 ### How to Filter by Prefix in Cockpit:
 
 To distinguish your logs, go to Network -> View All Logs and use the search box with the following syntax:
@@ -106,7 +106,7 @@ To distinguish your logs, go to Network -> View All Logs and use the search box 
     
   • To see all your custom firewall logs: Type OUT_. 
 
-      
+<br></br>      
 ### Advanced Cockpit Log-Filtering Tips:
 
 Cockpit's log viewer supports more than just simple text searching: 
