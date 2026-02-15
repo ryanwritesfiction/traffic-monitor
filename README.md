@@ -1,4 +1,5 @@
-# An Outbound Traffic Dashboard for use with Ubuntu Server 24.04.4 and Cockpit!
+# An Outbound Traffic Dashboard
+## For use with Ubuntu Server 24.04.4 and Cockpit!
 
 *See Cockpit install instructions below.*
 
