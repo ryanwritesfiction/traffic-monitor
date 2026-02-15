@@ -1,6 +1,5 @@
 An Outbound Traffic Dashboard for use with Ubuntu Server 24.04.4 and Cockpit!
 
-https://cockpit-project.org/documentation.html
 See Cockpit install instructions below.
 
 
