@@ -28,6 +28,7 @@ Ubuntu 24.04 uses systemd-resolved for DNS handling by default. To log queries p
   In the editor, add the following under the [Service] section:
       
 ```[Service]```
+
 ```Environment=SYSTEMD_LOG_LEVEL=debug```
 
   Make sure you un-comment the [Service] section! Save and exit.
