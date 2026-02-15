@@ -3,6 +3,7 @@ An Outbound Traffic Dashboard for use with Ubuntu Server 24.04.4 and Cockpit!
 https://cockpit-project.org/documentation.html
 See Cockpit install instructions below.
 
+
 The Need:
 
   Yes, cockpit allows you to filter its logs and view outbound web-traffic events. However, doing so will give you a veritable ocean of successful hits, many from the same URL or Address. Furthermore, ICMP ping requests are not logged out-of-the box. This is a security threat because hackers use ping commands to perform serveillance and smuggle data out of your network unseen. Not cool. If only there were some way to see that... And anyways, looking at these Network Logs in Cockpit has my eyes hurting. There has to be a better way!
@@ -18,6 +19,7 @@ The Solution:
   First, setup your Ubuntu logs to record DNS queries, TCP IP address traffic, and ICMP ping traffic. If you don't know how to do this, see the Ubuntu 24-specific guide below. Once you've done this successfully, you can verify by filtering Cockpit's Logs page for "OUT_" and "Looking up RR". Run some ping commands (8.8.8.8, google.com), try a curl command (curl -I https://8.8.8.8) or two. Wait a few seconds, then refresh. You should see them appear in Cockpit now. This confirms your logs are setup correctly. If not, see the Cockpit filtering tips below. Hint: "alert level" matters!
 
 Next, create a folder in ~/.local/share/cockpit called "traffic-monitor" and copies these files into it. Hard-refresh the Cockpit dashboard (Ctrl+F5). You should see a new tab called "Outbound Traffic". Click and enjoy! 
+
 
 Ubuntu 24.04.4 Log File Configuration:
 
@@ -40,6 +42,7 @@ Ubuntu 24.04 uses systemd-resolved for DNS handling by default. To log queries p
 
 ``` sudo systemctl restart systemd-resolved```
 
+
 Supplement with Iptables for IP/Port Logging: 
 
   If you want to log actual outbound connections to HTTP/HTTPS ports (80/443) for IPs (not domains), add iptables rules. This logs to the kernel ring buffer, visible in journalctl or Cockpit logs.
@@ -60,6 +63,7 @@ Supplement with Iptables for IP/Port Logging:
 
   This setup is minimal, uses only official Ubuntu tools/packages, and avoids complex setups like proxies or third-party software. If your server has heavy traffic, monitor log size (journalctl rotates automatically). For automation/alerts on unauthorized     domains, you could script journalctl output, but that's beyond "simple."
 
+
 To Log Ping Traffic:
 
   To log outbound ICMP (ping) traffic with a clear prefix in Cockpit, you can add this rule:
@@ -70,6 +74,7 @@ To Log Ping Traffic:
 
 
   By adding this, you'll have a more complete picture of your server's outbound "pulse" alongside your existing web traffic logs.
+
 
 Cockpit Install Instructions:
 
@@ -91,6 +96,7 @@ Access the dashboard:
         
   ◦ Log in with your Ubuntu server's username and password (must have sudo privileges for full access).
 
+
 How to Filter by Prefix in Cockpit:
 
 To distinguish your logs, go to Network -> View All Logs and use the search box with the following syntax:
@@ -100,6 +106,7 @@ To distinguish your logs, go to Network -> View All Logs and use the search box 
   • To see only Web Traffic: Type OUT_HTTP: or OUT_HTTPS:.
     
   • To see all your custom firewall logs: Type OUT_. 
+
       
 Advanced Cockpit Log-Filtering Tips:
 
