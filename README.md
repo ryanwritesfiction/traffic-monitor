@@ -2,7 +2,7 @@
 
 *See Cockpit install instructions below.*
 
-
+<br></br>
 ## The Need:
 
   Yes, cockpit allows you to filter its logs and view outbound web-traffic events. However, doing so will give you a veritable ocean of successful hits, many from the same URL or Address. Furthermore, ICMP ping requests are not logged out-of-the box. This is a security threat because hackers use ping commands to perform serveillance and smuggle data out of your network unseen. Not cool. If only there were some way to see that... And anyways, looking at these Network Logs in Cockpit has my eyes hurting. There has to be a better way!
