@@ -4,7 +4,7 @@ https://cockpit-project.org/documentation.html
 See Cockpit install instructions below.
 
 The Need:
-Yes, cockpit allows you to filter its logs and view outbound web-traffic events. However, doing so will give you a veritable ocean of successful hits, many from the same URL or Address. Furthermore, ICMP ping requests are not logged out-of-the box. This is a security threat because hackers use ping commands to perform serveillance and smuggle data out of your network unseen. Not cool. If only there were some way to see that... And anyways, looking at these Network Logs in cockpit has my eyes hurting. There has to be a better way!
+Yes, cockpit allows you to filter its logs and view outbound web-traffic events. However, doing so will give you a veritable ocean of successful hits, many from the same URL or Address. Furthermore, ICMP ping requests are not logged out-of-the box. This is a security threat because hackers use ping commands to perform serveillance and smuggle data out of your network unseen. Not cool. If only there were some way to see that... And anyways, looking at these Network Logs in Cockpit has my eyes hurting. There has to be a better way!
 
 The Idea:
 What if you could could distill all web traffic down to unique URLs and addresses? Then, instead of reviewing millions of log entries, you would only need to review hundreds or (in my case) scores! The idea is simple: comb through the web-traffic logs and create a data object for each unique IP address. Then, record the oldest timestamp, newest timestamp, and number of times that URL/address shows in your logs. Then display them in a nice, clean table, seamlessly integrated into your Cockpit dashboard, with www3 compliant javascript, well-commented code, and completely bug free!
