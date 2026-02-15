@@ -11,7 +11,7 @@ The Idea:
 
   What if you could could distill all web traffic down to unique URLs and addresses? Then, instead of reviewing millions of log entries, you would only need to review hundreds or (in my case) scores! The idea is simple: comb through the web-traffic logs and create a data object for each unique IP address. Then, record the oldest timestamp, newest timestamp, and number of times that URL/address shows in your logs. Then display them in a nice, clean table, seamlessly integrated into your Cockpit dashboard, with www3 compliant javascript, well-commented code, and completely bug free!
 
-Now, instead of straining your eyes and scrolling until your index finger goes numb, you will see each unique URL/IP address appear ONLY ONCE onscreen, with oldest and most recent timestamps visible, sortable columns, and selectable time-ranges. And, as if that weren't enough, all rendered in that cooler-than-cool Cockpit "dark mode" styling that makes nerds like me giddy (I think I need to get out more often)!
+Now, instead of straining your eyes and scrolling until your index finger goes numb, you will see each unique URL/IP address appear ONLY ONCE onscreen, with oldest and most recent timestamps visible, sortable columns, and selectable time-ranges. And, as if that weren't enough, all rendered in that cooler-than-cool Cockpit "dark mode" styling that makes nerds like me giddy (I think I need to get out more often).
 
 The Solution:
 
