@@ -15,7 +15,7 @@ Now, instead of straining your eyes and scrolling until your index finger goes n
 
 The Solution:
 
-  First, setup your Ubuntu logs to record DNS queries, TCP IP address traffic, and ICMP ping traffic. If you don't know how to do this, see the Ubuntu 24-specific guide below. Once you've done this successfully, you can verify by filtering Cockpit's Logs page for "OUT_" and "Looking up RR". Run some ping commands (8.8.8.8, google.com), try a curl command (curl -I https://8.8.8.8) or two. Wait a few seconds, then refresh. You should see them appear in Cockpit now. This confirms your logs are setup correctly. If not, see the Cockpit filtering tips below. Hint: "alert level" matters!
+  First, setup your Ubuntu logs to record DNS queries, TCP IP address traffic, and ICMP ping traffic. If you don't know how to do this, see the Ubuntu 24-specific guide below. Once you've done this successfully, you can verify by filtering Cockpit's Logs page for "OUT_" and "Looking up RR". Run some ping commands (8.8.8.8, google.com), try a curl command (curl -I https://9.9.9.9) or two. Wait a few seconds, then refresh. You should see them appear in Cockpit now. This confirms your logs are setup correctly. If not, see the Cockpit filtering tips below. Hint: "alert level" matters!
 
 Next, create a folder in ~/.local/share/cockpit called "traffic-monitor" and copies these files into it. Hard-refresh the Cockpit dashboard (Ctrl+F5). You should see a new tab called "Outbound Traffic". Click and enjoy! 
 
