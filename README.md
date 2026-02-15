@@ -50,6 +50,7 @@ If you want to log actual outbound connections to HTTP/HTTPS ports (80/443) for 
       sudo iptables -A OUTPUT -p tcp --dport 443 -j LOG --log-prefix "OUT_HTTPS: "
       
       sudo netfilter-persistent save
+
       
     • View these in Cockpit's Logs (search for "OUT_HTTP" or "OUT_HTTPS") 
 
@@ -58,12 +59,10 @@ This setup is minimal, uses only official Ubuntu tools/packages, and avoids comp
 To Log Ping Traffic:
 
 To log outbound ICMP (ping) traffic with a clear prefix in Cockpit, you can add this rule:
+*     bash
+      sudo iptables -A OUTPUT -p icmp --icmp-type echo-request -j LOG --log-prefix "OUT_PING: "
+      sudo netfilter-persistent save
 
-bash
-
-sudo iptables -A OUTPUT -p icmp --icmp-type echo-request -j LOG --log-prefix "OUT_PING: "
-
-sudo netfilter-persistent save
 
 By adding this, you'll have a more complete picture of your server's outbound "pulse" alongside your existing web traffic logs.
 
