@@ -19,7 +19,7 @@ First, setup your Ubuntu logs to record DNS queries, TCP IP address traffic, and
 Next, create a folder in ~/.local/share/cockpit called "traffic-monitor" and copies these files into it. Hard-refresh the Cockpit dashboard (Ctrl+F5). You should see a new tab called "Outbound Traffic". Click and enjoy! 
 
 ---
-
+<br></br>
 ### Ubuntu 24.04.4 Log File Configuration:
 
 Ubuntu 24.04 uses systemd-resolved for DNS handling by default. To log queries persistently:
