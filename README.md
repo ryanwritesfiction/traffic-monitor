@@ -6,6 +6,11 @@ See Cockpit install instructions below.
 The Need:
 Yes, cockpit allows you to filter its logs and view outbound web-traffic events. However, doing so will give you a veritable ocean of successful hits, many from the same URL or Address. Furthermore, ICMP ping requests are not logged out-of-the box. This is a security threat because hackers use ping commands to perform serveillance and smuggle data out of your network unseen. Not cool. If only there were some way to see that... And anyways, looking at these Network Logs in cockpit has my eyes hurting. There has to be a better way!
 
+The Idea:
+What if you could could distill all web traffic down to unique URLs and addresses? Then, instead of reviewing millions of log entries, you would only need to review hundreds or (in my case) scores! The idea is simple: comb through the web-traffic logs and create a data object for each unique IP address. Then, record the oldest timestamp, newest timestamp, and number of times that URL/address shows in your logs. Then display them in a nice, clean table, seamlessly integrated into your Cockpit dashboard, with www3 compliant javascript, well-commented code, and completely bug free!
+
+Now, instead of straining your eyes and scrolling until your index finger goes numb, you will see each unique URL/IP address appear ONLY ONCE onscreen, with oldest and most recent timestamps visible, sortable columns, and selectable time-ranges. And, as if that weren't enough, all rendered in that cooler-than-cool Cockpit "dark mode" styling that makes nerds like me giddy (I think I need to get out more often)!
+
 The Solution:
 First, setup your Ubuntu logs to record DNS queries, TCP IP address traffic, and ICMP ping traffic. If you don't know how to do this, see the Ubuntu 24-specific guide below. Once you've done this successfully, you can verify by filtering Cockpit's Logs page for "OUT_" and "Looking up RR". Run some ping commands (8.8.8.8, google.com), try a curl command (curl -I https://8.8.8.8) or two. Wait a few seconds, then refresh. You should see them appear in Cockpit now. This confirms your logs are setup correctly. If not, see the Cockpit filtering tips below. Hint: "alert level" matters!
 
