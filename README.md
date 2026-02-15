@@ -23,7 +23,7 @@ Ubuntu 24.04.4 Log File Configuration:
 Ubuntu 24.04 uses systemd-resolved for DNS handling by default. To log queries persistently:
   Edit the systemd-resolved service file to enable debug logging:
 
-```bash sudo systemctl edit systemd-resolved```
+``` sudo systemctl edit systemd-resolved```
     
   In the editor, add the following under the [Service] section:
       
@@ -34,8 +34,8 @@ Ubuntu 24.04 uses systemd-resolved for DNS handling by default. To log queries p
      
   Reload and restart the service:
     
-```bash sudo systemctl daemon-reload```
-```bash sudo systemctl restart systemd-resolved```
+``` sudo systemctl daemon-reload```
+``` sudo systemctl restart systemd-resolved```
 
 Supplement with Iptables for IP/Port Logging: 
 
@@ -43,13 +43,13 @@ Supplement with Iptables for IP/Port Logging:
 
   Install iptables-persistent if you want rules to survive reboots:
       
-```bash sudo apt install iptables-persistent```
+``` sudo apt install iptables-persistent```
       
   Add logging rules:
     
-```bash sudo iptables -A OUTPUT -p tcp --dport 80 -j LOG --log-prefix "OUT_HTTP: "```
-```bash sudo iptables -A OUTPUT -p tcp --dport 443 -j LOG --log-prefix "OUT_HTTPS: "```
-```bash sudo netfilter-persistent save```
+``` sudo iptables -A OUTPUT -p tcp --dport 80 -j LOG --log-prefix "OUT_HTTP: "```
+``` sudo iptables -A OUTPUT -p tcp --dport 443 -j LOG --log-prefix "OUT_HTTPS: "```
+``` sudo netfilter-persistent save```
 
   To view these changes in Cockpit's Logs (search for "OUT_HTTP" or "OUT_HTTPS") 
 
@@ -59,8 +59,8 @@ To Log Ping Traffic:
 
   To log outbound ICMP (ping) traffic with a clear prefix in Cockpit, you can add this rule:
 
-```bash sudo iptables -A OUTPUT -p icmp --icmp-type echo-request -j LOG --log-prefix "OUT_PING: "```
-```bash sudo netfilter-persistent save```
+``` sudo iptables -A OUTPUT -p icmp --icmp-type echo-request -j LOG --log-prefix "OUT_PING: "```
+``` sudo netfilter-persistent save```
 
 
   By adding this, you'll have a more complete picture of your server's outbound "pulse" alongside your existing web traffic logs.
@@ -71,12 +71,12 @@ Cockpit Install Instructions:
 
   To Install Cockpit:
     
-```bash sudo apt update```
-```bash sudo apt install cockpit```
+``` sudo apt update```
+``` sudo apt install cockpit```
       
   Enable and start the Cockpit service:
     
-```bash sudo systemctl enable --now cockpit.socket```
+``` sudo systemctl enable --now cockpit.socket```
       
 Access the dashboard:
     
