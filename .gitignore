@@ -6,5 +6,8 @@ DEBUG_SESSION.md
 # Screenshots from debugging and development
 images/
 
+# ipinfo daily usage counter (runtime data)
+ipinfo_usage.txt
+
 # Claude Code internal state
 .claude/

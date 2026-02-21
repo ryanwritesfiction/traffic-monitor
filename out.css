@@ -130,6 +130,33 @@ body {
     color: #fff;
 }
 
+/* -- Reverse-DNS toggle checkbox -- */
+.reverse-dns-toggle {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 14px;
+    background-color: var(--traffic-bg-secondary);
+    border: 1px solid var(--traffic-border);
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 13px;
+    transition: border-color 0.2s;
+}
+
+.reverse-dns-toggle:hover {
+    border-color: var(--traffic-accent);
+}
+
+.reverse-dns-toggle input[type="checkbox"] {
+    accent-color: var(--traffic-accent);
+}
+
+.reverse-dns-label {
+    color: var(--traffic-text-primary);
+    user-select: none;
+}
+
 /* -- Refresh countdown indicator -- */
 .refresh-indicator {
     font-size: 13px;
