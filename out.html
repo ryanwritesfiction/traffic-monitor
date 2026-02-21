@@ -30,6 +30,11 @@
                     <button class="time-filter-btn" data-range="1 month ago">Last Month</button>
                     <button class="time-filter-btn" data-range="1 year ago">Last Year</button>
                 </div>
+                <!-- Reverse-DNS artifact visibility toggle -->
+                <label class="reverse-dns-toggle">
+                    <input type="checkbox" id="reverse-dns-checkbox">
+                    <span class="reverse-dns-label">Show reverse-DNS</span>
+                </label>
                 <!-- Auto-refresh countdown display -->
                 <div class="refresh-indicator">
                     <span>Next refresh: <span id="refresh-countdown">15</span>s</span>
@@ -98,14 +103,14 @@
                             </span>
                         </th>
                         <th data-column="category">
-                            Category
+                            Owner
                             <span class="sort-controls">
                                 <button class="sort-btn" data-column="category" data-direction="asc" title="Sort ascending">&#9650;</button>
                                 <button class="sort-btn" data-column="category" data-direction="desc" title="Sort descending">&#9660;</button>
                             </span>
                         </th>
                         <th data-column="data">
-                            Data
+                            Timezone
                             <span class="sort-controls">
                                 <button class="sort-btn" data-column="data" data-direction="asc" title="Sort ascending">&#9650;</button>
                                 <button class="sort-btn" data-column="data" data-direction="desc" title="Sort descending">&#9660;</button>

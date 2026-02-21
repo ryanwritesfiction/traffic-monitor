@@ -61,7 +61,25 @@ var state = {
     scriptPath: null,
 
     // Whether a data fetch is currently in progress (prevents overlapping fetches)
-    isFetching: false
+    isFetching: false,
+
+    // ipinfo enrichment: cached results keyed by IP (prevents repeat lookups)
+    ipInfoCache: {},
+
+    // ipinfo enrichment: IPs currently being looked up (prevents duplicates)
+    pendingIpInfoLookups: {},
+
+    // ipinfo enrichment: daily request cap (change this when upgrading plans)
+    ipInfoDailyLimit: 1000,
+
+    // ipinfo enrichment: today's request count (loaded from file at init)
+    ipInfoDailyCount: 0,
+
+    // Path to ipinfo_usage.txt (resolved dynamically like scriptPath)
+    ipInfoUsagePath: null,
+
+    // Whether to show reverse-DNS (.in-addr.arpa) artifact rows (hidden by default)
+    showReverseDnsQueries: false
 };
 
 
@@ -77,6 +95,7 @@ document.addEventListener("DOMContentLoaded", function () {
     // cockpit.user() returns a promise with the logged-in user's info.
     cockpit.user().then(function (userInfo) {
         state.scriptPath = userInfo.home + "/.local/share/cockpit/traffic-monitor/fetch-logs.sh";
+        state.ipInfoUsagePath = userInfo.home + "/.local/share/cockpit/traffic-monitor/ipinfo_usage.txt";
 
         // Wire up all UI event handlers (time filter buttons, sort buttons)
         initializeEventListeners();
@@ -84,11 +103,14 @@ document.addEventListener("DOMContentLoaded", function () {
         // Set up the visibility change handler so we pause refresh when hidden
         setupVisibilityTracking();
 
-        // Fetch data for the first time
-        fetchAndRenderData();
+        // Load ipinfo usage count before first fetch, then start
+        loadIpInfoUsage().then(function () {
+            // Fetch data for the first time
+            fetchAndRenderData();
 
-        // Start the auto-refresh countdown timer
-        startAutoRefresh();
+            // Start the auto-refresh countdown timer
+            startAutoRefresh();
+        });
     });
 });
 
@@ -113,6 +135,12 @@ function initializeEventListeners() {
     var sortButtons = document.querySelectorAll(".sort-btn");
     for (var j = 0; j < sortButtons.length; j++) {
         sortButtons[j].addEventListener("click", handleSortChange);
+    }
+
+    // Reverse-DNS toggle checkbox
+    var reverseDnsCheckbox = document.getElementById("reverse-dns-checkbox");
+    if (reverseDnsCheckbox) {
+        reverseDnsCheckbox.addEventListener("change", handleReverseDnsToggle);
     }
 }
 
@@ -157,6 +185,14 @@ function handleSortChange(event) {
     button.classList.add("active");
 
     // Re-render the table (data is already in memory, just re-sort it)
+    renderTable();
+}
+
+
+/* Handle a change on the "Show reverse-DNS" checkbox.
+   Toggles visibility of .in-addr.arpa / .ip6.arpa artifact rows. */
+function handleReverseDnsToggle(event) {
+    state.showReverseDnsQueries = event.target.checked;
     renderTable();
 }
 
@@ -228,6 +264,9 @@ function fetchAndRenderData() {
 
         // Step 5: Kick off async reverse DNS lookups for IP-only records
         enrichWithReverseDns();
+
+        // Step 6: Kick off async ipinfo lookups for Owner/Timezone enrichment
+        enrichWithIpInfo();
 
         // Hide the loading spinner
         hideLoading();
@@ -506,6 +545,203 @@ function performReverseDns(ipAddress, recordIndex) {
 
 
 /* =============================================================================
+   IPINFO ENRICHMENT
+   =============================================================================
+   For records that have an IP address, we look up organization (owner) and
+   timezone using the ipinfo CLI tool. Results populate the Owner and Timezone
+   columns. A daily usage counter (persisted to disk) enforces the free-tier
+   1,000 requests/day limit. Results are cached to avoid repeat lookups.       */
+
+/* Load today's ipinfo usage count from the usage file.
+   File format is a single line: "YYYY-MM-DD|COUNT" */
+function loadIpInfoUsage() {
+    if (!state.ipInfoUsagePath) {
+        return Promise.resolve();
+    }
+
+    return cockpit.file(state.ipInfoUsagePath).read()
+        .then(function (content) {
+            if (!content || !content.trim()) {
+                state.ipInfoDailyCount = 0;
+                return;
+            }
+
+            var parts = content.trim().split("|");
+            var todayStr = new Date().toISOString().slice(0, 10);
+
+            if (parts.length === 2 && parts[0] === todayStr) {
+                state.ipInfoDailyCount = parseInt(parts[1], 10) || 0;
+            } else {
+                // Different day or bad format — reset
+                state.ipInfoDailyCount = 0;
+            }
+        })
+        .catch(function () {
+            // File doesn't exist yet — start at zero
+            state.ipInfoDailyCount = 0;
+        });
+}
+
+
+/* Save today's ipinfo usage count to disk */
+function saveIpInfoUsage() {
+    if (!state.ipInfoUsagePath) {
+        return;
+    }
+
+    var todayStr = new Date().toISOString().slice(0, 10);
+    var content = todayStr + "|" + state.ipInfoDailyCount;
+    cockpit.file(state.ipInfoUsagePath).replace(content);
+}
+
+
+/* Iterate all traffic records and kick off ipinfo lookups for records
+   that haven't been enriched yet. Uses IP address when available, falls
+   back to domain name (ipinfo accepts both). Cached results are applied
+   immediately (synchronously) so they survive auto-refresh rebuilds.
+   Only uncached keys get staggered network lookups. */
+function enrichWithIpInfo() {
+
+    var hadCachedResults = false;
+    var delay = 0;
+
+    for (var i = 0; i < state.trafficRecords.length; i++) {
+        var record = state.trafficRecords[i];
+
+        // Prefer IP, fall back to domain name (ipinfo accepts both)
+        var lookupKey = record.address || record.url;
+
+        // Only look up records that have an IP or URL and haven't been enriched yet
+        if (lookupKey && !record.category) {
+
+            // Apply cached results immediately (no network call needed)
+            if (state.ipInfoCache.hasOwnProperty(lookupKey)) {
+                var cached = state.ipInfoCache[lookupKey];
+                if (cached) {
+                    applyIpInfoResult(lookupKey, cached);
+                    hadCachedResults = true;
+                }
+                continue;
+            }
+
+            // Stop scheduling new lookups if daily limit reached
+            if (state.ipInfoDailyCount >= state.ipInfoDailyLimit) {
+                break;
+            }
+
+            // Stagger actual network lookups by 100ms each to avoid hammering
+            (function (key, idx, d) {
+                setTimeout(function () {
+                    performIpInfoLookup(key, idx);
+                }, d);
+            })(lookupKey, i, delay);
+
+            delay += 100;
+        }
+    }
+
+    // Re-render once if any cached results were applied
+    if (hadCachedResults) {
+        renderTable();
+    }
+}
+
+
+/* Perform a single ipinfo lookup for the given key (IP address or domain name).
+   On success, populates Owner (category) and Timezone (data) for all
+   matching records, and optionally fills in the URL from hostname or the
+   address from the resolved IP. */
+function performIpInfoLookup(lookupKey, recordIndex) {
+
+    // Check cache first
+    if (state.ipInfoCache.hasOwnProperty(lookupKey)) {
+        var cached = state.ipInfoCache[lookupKey];
+        if (cached) {
+            applyIpInfoResult(lookupKey, cached);
+        }
+        return;
+    }
+
+    // Skip if already in flight
+    if (state.pendingIpInfoLookups[lookupKey]) {
+        return;
+    }
+
+    // Skip if daily limit reached
+    if (state.ipInfoDailyCount >= state.ipInfoDailyLimit) {
+        return;
+    }
+
+    // Mark as in flight
+    state.pendingIpInfoLookups[lookupKey] = true;
+
+    cockpit.spawn(["ipinfo", lookupKey, "--json"], { err: "ignore" })
+        .then(function (output) {
+            var info = null;
+            try {
+                info = JSON.parse(output);
+            } catch (e) {
+                // Bad JSON — treat as failed lookup
+                state.ipInfoCache[lookupKey] = null;
+                delete state.pendingIpInfoLookups[lookupKey];
+                return;
+            }
+
+            var result = {
+                ip: info.ip || "",
+                hostname: info.hostname || "",
+                org: info.org || "",
+                timezone: info.timezone || ""
+            };
+
+            // Cache and apply
+            state.ipInfoCache[lookupKey] = result;
+            applyIpInfoResult(lookupKey, result);
+
+            // Track usage
+            state.ipInfoDailyCount++;
+            saveIpInfoUsage();
+
+            delete state.pendingIpInfoLookups[lookupKey];
+
+            // Re-render to show updated data
+            renderTable();
+        })
+        .catch(function () {
+            state.ipInfoCache[lookupKey] = null;
+            delete state.pendingIpInfoLookups[lookupKey];
+        });
+}
+
+
+/* Apply an ipinfo result to all records matching the given lookup key
+   (which may be an IP address or a domain name) */
+function applyIpInfoResult(lookupKey, result) {
+    for (var j = 0; j < state.trafficRecords.length; j++) {
+        var rec = state.trafficRecords[j];
+        if (rec.address === lookupKey || rec.url === lookupKey) {
+            // Fill hostname into URL only if still empty (won't overwrite reverse DNS)
+            if (!rec.url && result.hostname) {
+                rec.url = result.hostname;
+            }
+            // Fill resolved IP into address if still empty (domain-only records)
+            if (!rec.address && result.ip) {
+                rec.address = result.ip;
+            }
+            // Owner column
+            if (!rec.category && result.org) {
+                rec.category = result.org;
+            }
+            // Timezone column
+            if (!rec.data && result.timezone) {
+                rec.data = result.timezone;
+            }
+        }
+    }
+}
+
+
+/* =============================================================================
    SORTING
    =============================================================================
    Sorts the traffic records based on the current sort column and direction.
@@ -556,6 +792,14 @@ function sortRecords(records) {
 }
 
 
+/* Returns true if the URL is a reverse-DNS PTR artifact (.in-addr.arpa or .ip6.arpa) */
+function isReverseDnsQuery(url) {
+    if (!url) return false;
+    var lower = url.toLowerCase();
+    return lower.indexOf(".in-addr.arpa") !== -1 || lower.indexOf(".ip6.arpa") !== -1;
+}
+
+
 /* =============================================================================
    TABLE RENDERING
    =============================================================================
@@ -583,8 +827,11 @@ function renderTable() {
     // Sort a copy of the records (we don't want to mutate the original order)
     var sorted = sortRecords(state.trafficRecords.slice());
 
-    // Build a table row for each record
+    // Build a table row for each record, filtering reverse-DNS artifacts
     for (var i = 0; i < sorted.length; i++) {
+        if (!state.showReverseDnsQueries && isReverseDnsQuery(sorted[i].url)) {
+            continue;
+        }
         var row = createTableRow(sorted[i]);
         tbody.appendChild(row);
     }
@@ -633,13 +880,13 @@ function createTableRow(record) {
     freqCell.textContent = record.frequency;
     row.appendChild(freqCell);
 
-    // Column 6: Category (future feature - shows placeholder)
+    // Column 6: Owner (Organization from ipinfo)
     var catCell = document.createElement("td");
     catCell.className = "category-cell";
     catCell.textContent = record.category || "\u2014";
     row.appendChild(catCell);
 
-    // Column 7: Data (future feature - shows placeholder)
+    // Column 7: Timezone (from ipinfo)
     var dataCell = document.createElement("td");
     dataCell.className = "data-cell";
     dataCell.textContent = record.data || "\u2014";
@@ -693,9 +940,16 @@ function hideError() {
 
 /* Update the status bar with the current record count and last update time */
 function updateStatusBar() {
-    var count = state.trafficRecords.length;
+    var total = state.trafficRecords.length;
+    var tbody = document.getElementById("traffic-table-body");
+    var displayed = tbody ? tbody.querySelectorAll("tr:not(.empty-state)").length : total;
+
     var countEl = document.getElementById("record-count");
-    countEl.textContent = count + " record" + (count !== 1 ? "s" : "");
+    if (displayed < total) {
+        countEl.textContent = displayed + " of " + total + " records (reverse-DNS hidden)";
+    } else {
+        countEl.textContent = total + " record" + (total !== 1 ? "s" : "");
+    }
 
     var updateEl = document.getElementById("last-update");
     updateEl.textContent = "Last updated: " + new Date().toLocaleTimeString();
